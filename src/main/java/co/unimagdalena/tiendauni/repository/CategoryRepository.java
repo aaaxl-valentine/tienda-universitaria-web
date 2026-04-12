@@ -19,13 +19,13 @@ public interface CategoryRepository extends JpaRepository<Category, Long> {
 
     // Top de categorías por volumen de ventas
     @Query("SELECT c, SUM(oi.quantity) as totalSold FROM Category c " +
-           "JOIN c.products p " +
-           "JOIN p.orderItems oi " +
-           "JOIN oi.order o " +
-           "WHERE o.status IN ('PAID', 'SHIPPED', 'DELIVERED') " +
-           "AND o.createdAt BETWEEN :startDate AND :endDate " +
-           "GROUP BY c " +
-           "ORDER BY SUM(oi.quantity) DESC")
+            "JOIN c.products p " +
+            "JOIN OrderItem oi ON oi.product = p " +
+            "JOIN oi.order o " +
+            "WHERE o.status IN ('PAID', 'SHIPPED', 'DELIVERED') " +
+            "AND o.createdAt BETWEEN :startDate AND :endDate " +
+            "GROUP BY c " +
+            "ORDER BY SUM(oi.quantity) DESC")
     List<Object[]> findTopCategoriesBySalesVolume(
             @Param("startDate") LocalDateTime startDate,
             @Param("endDate") LocalDateTime endDate);
