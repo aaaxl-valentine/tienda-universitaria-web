@@ -1,11 +1,11 @@
-package co.unimagdalena.tiendauni.service.mapper;
+package co.unimagdalena.tiendauni.service.mappers;
 
 import co.unimagdalena.tiendauni.DTOs.OrderDTOs.CreateOrderRequest;
 import co.unimagdalena.tiendauni.DTOs.OrderDTOs.OrderResponse;
 import co.unimagdalena.tiendauni.entity.Address;
 import co.unimagdalena.tiendauni.entity.Customer;
 import co.unimagdalena.tiendauni.entity.Order;
-import co.unimagdalena.tiendauni.enums.OrderStatus;
+import co.unimagdalena.tiendauni.entity.enums.OrderStatus;
 
 import java.math.BigDecimal;
 

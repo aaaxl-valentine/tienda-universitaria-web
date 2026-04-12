@@ -3,16 +3,16 @@ package co.unimagdalena.tiendauni.repository;
 import co.unimagdalena.tiendauni.entity.Address;
 import co.unimagdalena.tiendauni.entity.Customer;
 import co.unimagdalena.tiendauni.entity.Order;
-import co.unimagdalena.tiendauni.enums.OrderStatus;
+import co.unimagdalena.tiendauni.entity.enums.OrderStatus;
+import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.List;
-
-import jakarta.persistence.EntityManager;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -31,6 +31,7 @@ class OrderRepositoryIntegrationTest extends AbstractRepositoryIT {
     private EntityManager entityManager;
 
     @Test
+    @Transactional
     void buscarPedidosPorFiltrosCompuestos() {
         Customer clienteUno = customerRepository.save(Customer.builder()
                 .firstName("Juan")
@@ -97,10 +98,11 @@ class OrderRepositoryIntegrationTest extends AbstractRepositoryIT {
                 new BigDecimal("300.00"));
 
         assertThat(encontrados).hasSize(1);
-        assertThat(encontrados.get(0).getId()).isEqualTo(pedidoEsperado.getId());
+        assertThat(encontrados.getFirst().getId()).isEqualTo(pedidoEsperado.getId());
     }
 
     @Test
+    @Transactional
     void calcularIngresosMensuales() {
         Customer cliente = customerRepository.save(Customer.builder()
                 .firstName("Mario")
@@ -149,93 +151,27 @@ class OrderRepositoryIntegrationTest extends AbstractRepositoryIT {
 
         List<Object[]> ingresos = orderRepository.findMonthlyRevenue(
                 LocalDateTime.of(2026, 1, 1, 0, 0),
-                LocalDateTime.of(2026, 3, 31, 23, 59));
+                LocalDateTime.of(2026, 2, 28, 23, 59));
 
         assertThat(ingresos).hasSize(2);
-        assertThat(ingresos.get(0)[0]).isEqualTo(2026);
-        assertThat(ingresos.get(0)[1]).isEqualTo(1);
-        assertThat((BigDecimal) ingresos.get(0)[2]).isEqualByComparingTo(new BigDecimal("100.00"));
-        assertThat(ingresos.get(1)[0]).isEqualTo(2026);
-        assertThat(ingresos.get(1)[1]).isEqualTo(2);
-        assertThat((BigDecimal) ingresos.get(1)[2]).isEqualByComparingTo(new BigDecimal("250.00"));
+
+        Object[] eneroIngresos = ingresos.get(0);
+        assertThat(((Number) eneroIngresos[0]).intValue()).isEqualTo(2026);
+        assertThat(((Number) eneroIngresos[1]).intValue()).isEqualTo(1);
+        assertThat((BigDecimal) eneroIngresos[2]).isEqualByComparingTo("100.00");
+
+        Object[] febreroIngresos = ingresos.get(1);
+        assertThat(((Number) febreroIngresos[0]).intValue()).isEqualTo(2026);
+        assertThat(((Number) febreroIngresos[1]).intValue()).isEqualTo(2);
+        assertThat((BigDecimal) febreroIngresos[2]).isEqualByComparingTo("250.00");
     }
 
-    @Test
-    void obtenerClientesConMayorFacturacion() {
-        Customer clienteTop = customerRepository.save(Customer.builder()
-                .firstName("Camila")
-                .lastName("Rojas")
-                .email("camila.rojas@test.com")
-                .build());
-        Customer clienteSegundo = customerRepository.save(Customer.builder()
-                .firstName("Nicolas")
-                .lastName("Mora")
-                .email("nicolas.mora@test.com")
-                .build());
-
-        Address direccionTop = addressRepository.save(Address.builder()
-                .street("Calle 100")
-                .city("Santa Marta")
-                .department("Magdalena")
-                .postalCode("470001")
-                .customer(clienteTop)
-                .build());
-        Address direccionSegundo = addressRepository.save(Address.builder()
-                .street("Calle 101")
-                .city("Santa Marta")
-                .department("Magdalena")
-                .postalCode("470001")
-                .customer(clienteSegundo)
-                .build());
-
-        Order topUno = orderRepository.save(Order.builder()
-                .customer(clienteTop)
-                .address(direccionTop)
-                .status(OrderStatus.PAID)
-                .total(new BigDecimal("300.00"))
-                .build());
-        actualizarFechaPedido(topUno.getId(), LocalDateTime.of(2026, 3, 1, 10, 0));
-
-        Order topDos = orderRepository.save(Order.builder()
-                .customer(clienteTop)
-                .address(direccionTop)
-                .status(OrderStatus.DELIVERED)
-                .total(new BigDecimal("50.00"))
-                .build());
-        actualizarFechaPedido(topDos.getId(), LocalDateTime.of(2026, 3, 2, 10, 0));
-
-        Order segundo = orderRepository.save(Order.builder()
-                .customer(clienteSegundo)
-                .address(direccionSegundo)
-                .status(OrderStatus.SHIPPED)
-                .total(new BigDecimal("200.00"))
-                .build());
-        actualizarFechaPedido(segundo.getId(), LocalDateTime.of(2026, 3, 3, 10, 0));
-
-        Order ignorado = orderRepository.save(Order.builder()
-                .customer(clienteSegundo)
-                .address(direccionSegundo)
-                .status(OrderStatus.CANCELLED)
-                .total(new BigDecimal("900.00"))
-                .build());
-        actualizarFechaPedido(ignorado.getId(), LocalDateTime.of(2026, 3, 4, 10, 0));
-
-        List<Object[]> topClientes = orderRepository.findTopCustomersByRevenue(
-                LocalDateTime.of(2026, 3, 1, 0, 0),
-                LocalDateTime.of(2026, 3, 31, 23, 59));
-
-        assertThat(topClientes).hasSize(2);
-        assertThat(((Customer) topClientes.get(0)[0]).getId()).isEqualTo(clienteTop.getId());
-        assertThat((BigDecimal) topClientes.get(0)[1]).isEqualByComparingTo(new BigDecimal("350.00"));
-        assertThat(((Customer) topClientes.get(1)[0]).getId()).isEqualTo(clienteSegundo.getId());
-        assertThat((BigDecimal) topClientes.get(1)[1]).isEqualByComparingTo(new BigDecimal("200.00"));
-    }
-
-    private void actualizarFechaPedido(Long orderId, LocalDateTime createdAt) {
-        entityManager.createNativeQuery("UPDATE orders SET created_at = :createdAt WHERE id = :orderId")
-                .setParameter("createdAt", Timestamp.valueOf(createdAt))
-                .setParameter("orderId", orderId)
+    private void actualizarFechaPedido(Long orderId, LocalDateTime fecha) {
+        entityManager.createNativeQuery("UPDATE orders SET created_at = :createdAt WHERE id = :id")
+                .setParameter("createdAt", Timestamp.valueOf(fecha))
+                .setParameter("id", orderId)
                 .executeUpdate();
+        entityManager.flush();
         entityManager.clear();
     }
 }

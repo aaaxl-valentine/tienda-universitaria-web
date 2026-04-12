@@ -1,9 +1,9 @@
-package co.unimagdalena.tiendauni.service.mapper;
+package co.unimagdalena.tiendauni.service.mappers;
 
 import co.unimagdalena.tiendauni.DTOs.CustomerDTOs.CreateCustomerRequest;
 import co.unimagdalena.tiendauni.DTOs.CustomerDTOs.CustomerResponse;
 import co.unimagdalena.tiendauni.entity.Customer;
-import co.unimagdalena.tiendauni.enums.CustomerStatus;
+import co.unimagdalena.tiendauni.entity.enums.CustomerStatus;
 
 public class CustomerMapper {
 

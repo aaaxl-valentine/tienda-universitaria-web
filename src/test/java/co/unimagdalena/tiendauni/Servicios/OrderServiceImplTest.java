@@ -1,4 +1,4 @@
-package co.unimagdalena.tiendauni.service;
+package co.unimagdalena.tiendauni.Servicios;
 
 import co.unimagdalena.tiendauni.DTOs.OrderDTOs.CancelOrderRequest;
 import co.unimagdalena.tiendauni.DTOs.OrderDTOs.CreateOrderRequest;
@@ -10,14 +10,16 @@ import co.unimagdalena.tiendauni.entity.Order;
 import co.unimagdalena.tiendauni.entity.OrderItem;
 import co.unimagdalena.tiendauni.entity.OrderStatusHistory;
 import co.unimagdalena.tiendauni.entity.Product;
-import co.unimagdalena.tiendauni.enums.CustomerStatus;
-import co.unimagdalena.tiendauni.enums.OrderStatus;
+import co.unimagdalena.tiendauni.entity.enums.CustomerStatus;
+import co.unimagdalena.tiendauni.entity.enums.OrderStatus;
 import co.unimagdalena.tiendauni.repository.AddressRepository;
 import co.unimagdalena.tiendauni.repository.CustomerRepository;
 import co.unimagdalena.tiendauni.repository.OrderItemRepository;
 import co.unimagdalena.tiendauni.repository.OrderRepository;
 import co.unimagdalena.tiendauni.repository.OrderStatusHistoryRepository;
 import co.unimagdalena.tiendauni.repository.ProductRepository;
+import co.unimagdalena.tiendauni.service.InventoryService;
+import co.unimagdalena.tiendauni.service.OrderServiceImpl;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -64,7 +66,7 @@ class OrderServiceImplTest {
         Address address = addressForCustomer(10L, customer);
         CreateOrderRequest request = new CreateOrderRequest(null, 1L, 10L, List.of());
 
-        when(customerRepository.findById(1L)).thenReturn(Optional.of(customer));
+        when(customerRepository.findByIdAndStatus(1L, CustomerStatus.ACTIVE)).thenReturn(Optional.of(customer));
         when(addressRepository.findById(10L)).thenReturn(Optional.of(address));
 
         assertThatThrownBy(() -> service.createOrder(request))
@@ -81,7 +83,7 @@ class OrderServiceImplTest {
         CreateOrderItemRequest badItem = new CreateOrderItemRequest(0, null, null, 100L);
         CreateOrderRequest request = new CreateOrderRequest(null, 1L, 10L, List.of(badItem));
 
-        when(customerRepository.findById(1L)).thenReturn(Optional.of(customer));
+        when(customerRepository.findByIdAndStatus(1L, CustomerStatus.ACTIVE)).thenReturn(Optional.of(customer));
         when(addressRepository.findById(10L)).thenReturn(Optional.of(address));
 
         assertThatThrownBy(() -> service.createOrder(request))
@@ -103,7 +105,7 @@ class OrderServiceImplTest {
         CreateOrderItemRequest itemB = new CreateOrderItemRequest(3, null, null, 200L);
         CreateOrderRequest request = new CreateOrderRequest(null, 1L, 10L, List.of(itemA, itemB));
 
-        when(customerRepository.findById(1L)).thenReturn(Optional.of(customer));
+        when(customerRepository.findByIdAndStatus(1L, CustomerStatus.ACTIVE)).thenReturn(Optional.of(customer));
         when(addressRepository.findById(10L)).thenReturn(Optional.of(address));
         when(productRepository.findById(100L)).thenReturn(Optional.of(productA));
         when(productRepository.findById(200L)).thenReturn(Optional.of(productB));

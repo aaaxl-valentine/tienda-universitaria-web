@@ -1,4 +1,4 @@
-package co.unimagdalena.tiendauni.service.mapper;
+package co.unimagdalena.tiendauni.service.mappers;
 
 import co.unimagdalena.tiendauni.DTOs.AddressDTOs.CreateAddressRequest;
 import co.unimagdalena.tiendauni.DTOs.AddressDTOs.AddressResponse;

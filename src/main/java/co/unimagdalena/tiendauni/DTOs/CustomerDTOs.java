@@ -1,6 +1,6 @@
 package co.unimagdalena.tiendauni.DTOs;
 
-import co.unimagdalena.tiendauni.enums.CustomerStatus;
+import co.unimagdalena.tiendauni.entity.enums.CustomerStatus;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;

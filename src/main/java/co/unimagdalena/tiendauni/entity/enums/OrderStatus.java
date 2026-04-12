@@ -1,4 +1,4 @@
-package co.unimagdalena.tiendauni.enums;
+package co.unimagdalena.tiendauni.entity.enums;
 
 public enum OrderStatus {
 

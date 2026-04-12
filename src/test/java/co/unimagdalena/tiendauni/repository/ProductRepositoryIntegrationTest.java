@@ -6,7 +6,7 @@ import co.unimagdalena.tiendauni.entity.Customer;
 import co.unimagdalena.tiendauni.entity.Order;
 import co.unimagdalena.tiendauni.entity.OrderItem;
 import co.unimagdalena.tiendauni.entity.Product;
-import co.unimagdalena.tiendauni.enums.OrderStatus;
+import co.unimagdalena.tiendauni.entity.enums.OrderStatus;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 

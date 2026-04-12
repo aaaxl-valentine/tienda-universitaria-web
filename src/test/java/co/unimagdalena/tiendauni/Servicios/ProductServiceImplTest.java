@@ -1,4 +1,4 @@
-package co.unimagdalena.tiendauni.service;
+package co.unimagdalena.tiendauni.Servicios;
 
 import co.unimagdalena.tiendauni.DTOs.ProductDTOs.CreateProductRequest;
 import co.unimagdalena.tiendauni.DTOs.ProductDTOs.ProductResponse;
@@ -7,10 +7,12 @@ import co.unimagdalena.tiendauni.entity.Category;
 import co.unimagdalena.tiendauni.entity.Order;
 import co.unimagdalena.tiendauni.entity.OrderItem;
 import co.unimagdalena.tiendauni.entity.Product;
-import co.unimagdalena.tiendauni.enums.OrderStatus;
+import co.unimagdalena.tiendauni.entity.enums.OrderStatus;
 import co.unimagdalena.tiendauni.repository.CategoryRepository;
 import co.unimagdalena.tiendauni.repository.OrderItemRepository;
 import co.unimagdalena.tiendauni.repository.ProductRepository;
+import co.unimagdalena.tiendauni.service.InventoryService;
+import co.unimagdalena.tiendauni.service.ProductServiceImpl;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;

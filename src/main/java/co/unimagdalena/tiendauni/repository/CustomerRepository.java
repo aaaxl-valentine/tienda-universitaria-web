@@ -1,7 +1,7 @@
 package co.unimagdalena.tiendauni.repository;
 
 import co.unimagdalena.tiendauni.entity.Customer;
-import co.unimagdalena.tiendauni.enums.CustomerStatus;
+import co.unimagdalena.tiendauni.entity.enums.CustomerStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -15,9 +15,11 @@ public interface CustomerRepository extends JpaRepository<Customer, Long> {
 
     boolean existsByEmail(String email);
 
-    // Buscar clientes por estado
+    // Buscar clientes activos
     List<Customer> findByStatus(CustomerStatus status);
 
-    // Verificar si un cliente existe y coincide con el estado
+    // Verificar si un cliente existe y está activo
     boolean existsByIdAndStatus(Long id, CustomerStatus status);
+
+    Optional<Customer> findByIdAndStatus(Long id, CustomerStatus status);
 }

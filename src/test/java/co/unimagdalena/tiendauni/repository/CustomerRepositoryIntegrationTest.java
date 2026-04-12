@@ -1,7 +1,7 @@
 package co.unimagdalena.tiendauni.repository;
 
 import co.unimagdalena.tiendauni.entity.Customer;
-import co.unimagdalena.tiendauni.enums.CustomerStatus;
+import co.unimagdalena.tiendauni.entity.enums.CustomerStatus;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 

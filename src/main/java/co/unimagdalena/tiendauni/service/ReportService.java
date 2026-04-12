@@ -5,7 +5,7 @@ import co.unimagdalena.tiendauni.DTOs.OrderDTOs.MonthlyIncomeResponse;
 import co.unimagdalena.tiendauni.DTOs.OrderDTOs.OrderResponse;
 import co.unimagdalena.tiendauni.DTOs.ProductDTOs.BestSellingProductResponse;
 import co.unimagdalena.tiendauni.DTOs.ProductDTOs.LowStockProductResponse;
-import co.unimagdalena.tiendauni.enums.OrderStatus;
+import co.unimagdalena.tiendauni.entity.enums.OrderStatus;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;

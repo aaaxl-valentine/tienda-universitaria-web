@@ -6,7 +6,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import co.unimagdalena.tiendauni.enums.CustomerStatus;
+import co.unimagdalena.tiendauni.entity.enums.CustomerStatus;
 
 @Data
 @Builder
