@@ -8,7 +8,7 @@ public class CategoryDTOs {
             String description
     ) implements Serializable {}
 
-    public record CategoryResponse(
+    public record CategoryResponse (
             Long id,
             String name,
             String description
