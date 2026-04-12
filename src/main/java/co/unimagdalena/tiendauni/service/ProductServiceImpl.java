@@ -1,10 +1,14 @@
 package co.unimagdalena.tiendauni.service;
 
+import co.unimagdalena.tiendauni.DTOs.ProductDTOs.CreateProductRequest;
+import co.unimagdalena.tiendauni.DTOs.ProductDTOs.ProductResponse;
+import co.unimagdalena.tiendauni.DTOs.ProductDTOs.UpdateProductRequest;
 import co.unimagdalena.tiendauni.entity.Product;
 import co.unimagdalena.tiendauni.entity.Category;
 import co.unimagdalena.tiendauni.repository.ProductRepository;
 import co.unimagdalena.tiendauni.repository.CategoryRepository;
 import co.unimagdalena.tiendauni.repository.OrderItemRepository;
+import co.unimagdalena.tiendauni.service.mapper.ProductMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,55 +28,48 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     @Transactional
-    public Product createProduct(String sku, String name, String description, BigDecimal price, Long categoryId) {
+    public ProductResponse createProduct(CreateProductRequest request) {
         // Validación: SKU único
-        if (productRepository.existsBySku(sku)) {
-            throw new IllegalArgumentException("Product with SKU '" + sku + "' already exists");
+        if (productRepository.existsBySku(request.sku())) {
+            throw new IllegalArgumentException("Product with SKU '" + request.sku() + "' already exists");
         }
 
         // Validación: precio mayor que cero
-        if (price == null || price.compareTo(BigDecimal.ZERO) <= 0) {
+        if (request.price() == null || request.price().compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("Product price must be greater than zero");
         }
 
         // Validación: categoría existente
-        Category category = categoryRepository.findById(categoryId)
-                .orElseThrow(() -> new IllegalArgumentException("Category with ID " + categoryId + " does not exist"));
+        Category category = categoryRepository.findById(request.categoryId())
+                .orElseThrow(() -> new IllegalArgumentException("Category with ID " + request.categoryId() + " does not exist"));
 
-        Product product = Product.builder()
-                .sku(sku)
-                .name(name)
-                .description(description)
-                .price(price)
-                .active(true)
-                .category(category)
-                .build();
-
-        return productRepository.save(product);
+        Product product = ProductMapper.toEntity(request, category);
+        return ProductMapper.toResponse(productRepository.save(product));
     }
 
     @Override
     @Transactional
-    public Product createProductWithInventory(String sku, String name, String description, BigDecimal price,
-                                            Long categoryId, Integer initialStock, Integer minimumStock) {
+    public ProductResponse createProductWithInventory(CreateProductRequest request, Integer initialStock, Integer minimumStock) {
         // Crear el producto primero
-        Product product = createProduct(sku, name, description, price, categoryId);
+        ProductResponse product = createProduct(request);
 
         // Crear inventario inicial
-        inventoryService.createInventoryForProduct(product.getId(), initialStock, minimumStock);
+        inventoryService.createInventoryForProduct(product.id(), initialStock, minimumStock);
 
         // Recargar el producto con el inventario
-        return productRepository.findById(product.getId()).orElse(product);
+        return productRepository.findById(product.id())
+                .map(ProductMapper::toResponse)
+                .orElse(product);
     }
 
     @Override
-    public Optional<Product> findById(Long id) {
-        return productRepository.findById(id);
+    public Optional<ProductResponse> findById(Long id) {
+        return productRepository.findById(id).map(ProductMapper::toResponse);
     }
 
     @Override
-    public Optional<Product> findBySku(String sku) {
-        return productRepository.findBySku(sku);
+    public Optional<ProductResponse> findBySku(String sku) {
+        return productRepository.findBySku(sku).map(ProductMapper::toResponse);
     }
 
     @Override
@@ -82,33 +79,34 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     @Transactional
-    public Product updateProduct(Long productId, String name, String description, BigDecimal price, Long categoryId) {
+    public ProductResponse updateProduct(Long productId, UpdateProductRequest request) {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new IllegalArgumentException("Product with ID " + productId + " not found"));
 
         // Validación: precio mayor que cero
-        if (price != null && price.compareTo(BigDecimal.ZERO) <= 0) {
+        if (request.price() != null && request.price().compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("Product price must be greater than zero");
         }
 
         // Validación: categoría existente (si se proporciona)
-        if (categoryId != null) {
-            Category category = categoryRepository.findById(categoryId)
-                    .orElseThrow(() -> new IllegalArgumentException("Category with ID " + categoryId + " does not exist"));
+        if (request.categoryId() != null) {
+            Category category = categoryRepository.findById(request.categoryId())
+                    .orElseThrow(() -> new IllegalArgumentException("Category with ID " + request.categoryId() + " does not exist"));
             product.setCategory(category);
         }
 
         // Actualizar campos no nulos
-        if (name != null) product.setName(name);
-        if (description != null) product.setDescription(description);
-        if (price != null) product.setPrice(price);
+        if (request.name() != null) product.setName(request.name());
+        if (request.description() != null) product.setDescription(request.description());
+        if (request.price() != null) product.setPrice(request.price());
+        if (request.active() != null) product.setActive(request.active());
 
-        return productRepository.save(product);
+        return ProductMapper.toResponse(productRepository.save(product));
     }
 
     @Override
     @Transactional
-    public Product setProductActive(Long productId, boolean active) {
+    public ProductResponse setProductActive(Long productId, boolean active) {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new IllegalArgumentException("Product with ID " + productId + " not found"));
 
@@ -127,26 +125,32 @@ public class ProductServiceImpl implements ProductService {
         }
 
         product.setActive(active);
-        return productRepository.save(product);
+        return ProductMapper.toResponse(productRepository.save(product));
     }
 
     @Override
-    public List<Product> findAll() {
-        return productRepository.findAll();
+    public List<ProductResponse> findAll() {
+        return productRepository.findAll().stream()
+                .map(ProductMapper::toResponse)
+                .toList();
     }
 
     @Override
-    public List<Product> findByCategory(Long categoryId) {
+    public List<ProductResponse> findByCategory(Long categoryId) {
         // Validar que la categoría existe
         if (!categoryRepository.existsById(categoryId)) {
             throw new IllegalArgumentException("Category with ID " + categoryId + " does not exist");
         }
 
-        return productRepository.findByCategoryId(categoryId);
+        return productRepository.findByCategoryId(categoryId).stream()
+                .map(ProductMapper::toResponse)
+                .toList();
     }
 
     @Override
-    public List<Product> findActiveProducts() {
-        return productRepository.findByActiveTrue();
+    public List<ProductResponse> findActiveProducts() {
+        return productRepository.findByActiveTrue().stream()
+                .map(ProductMapper::toResponse)
+                .toList();
     }
 }

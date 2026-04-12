@@ -1,17 +1,19 @@
 package co.unimagdalena.tiendauni.service;
 
+import co.unimagdalena.tiendauni.DTOs.OrderDTOs.CancelOrderRequest;
+import co.unimagdalena.tiendauni.DTOs.OrderDTOs.CreateOrderRequest;
+import co.unimagdalena.tiendauni.DTOs.OrderDTOs.OrderResponse;
+import co.unimagdalena.tiendauni.DTOs.OrderItemDTOs.CreateOrderItemRequest;
 import co.unimagdalena.tiendauni.entity.*;
 import co.unimagdalena.tiendauni.repository.*;
-import com.unimag.tiendauniversitaria.entity.*;
 import co.unimagdalena.tiendauni.enums.CustomerStatus;
 import co.unimagdalena.tiendauni.enums.OrderStatus;
-import com.unimag.tiendauniversitaria.repository.*;
+import co.unimagdalena.tiendauni.service.mapper.OrderMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -29,7 +31,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional
-    public Order createOrder(CreateOrderRequest request) {
+    public OrderResponse createOrder(CreateOrderRequest request) {
         // Validar que el cliente existe
         Customer customer = customerRepository.findById(request.customerId())
                 .orElseThrow(() -> new IllegalArgumentException("Customer with ID " + request.customerId() + " not found"));
@@ -54,14 +56,7 @@ public class OrderServiceImpl implements OrderService {
         }
 
         // Crear el pedido con estado inicial CREATED
-        Order order = Order.builder()
-                .status(OrderStatus.CREATED)
-                .total(BigDecimal.ZERO) // Se calculará después
-                .customer(customer)
-                .address(address)
-                .items(new ArrayList<>())
-                .build();
-
+        Order order = OrderMapper.toEntity(request, customer, address);
         // Crear los ítems del pedido
         BigDecimal orderTotal = BigDecimal.ZERO;
 
@@ -105,21 +100,23 @@ public class OrderServiceImpl implements OrderService {
         // Registrar estado inicial en el historial
         recordStatusChange(savedOrder, OrderStatus.CREATED, "Order created");
 
-        return savedOrder;
+        return OrderMapper.toResponse(savedOrder);
     }
 
     @Override
-    public Optional<Order> findById(Long id) {
-        return orderRepository.findById(id);
+    public Optional<OrderResponse> findById(Long id) {
+        return orderRepository.findById(id).map(OrderMapper::toResponse);
     }
 
     @Override
-    public List<Order> findByCustomerId(Long customerId) {
+    public List<OrderResponse> findByCustomerId(Long customerId) {
         // Validar que el cliente existe
         if (!customerRepository.existsById(customerId)) {
             throw new IllegalArgumentException("Customer with ID " + customerId + " not found");
         }
-        return orderRepository.findByCustomerId(customerId);
+        return orderRepository.findByCustomerId(customerId).stream()
+                .map(OrderMapper::toResponse)
+                .toList();
     }
 
     @Override
@@ -134,7 +131,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional
-    public Order processPayment(Long orderId) {
+    public OrderResponse processPayment(Long orderId) {
         // Obtener el pedido
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new IllegalArgumentException("Order with ID " + orderId + " not found"));
@@ -150,7 +147,7 @@ public class OrderServiceImpl implements OrderService {
             if (currentStock < item.getQuantity()) {
                 throw new IllegalArgumentException(
                         "Insufficient stock for product '" + item.getProduct().getSku() + "'. " +
-                        "Available: " + currentStock + ", Requested: " + item.getQuantity());
+                                "Available: " + currentStock + ", Requested: " + item.getQuantity());
             }
         }
 
@@ -166,12 +163,12 @@ public class OrderServiceImpl implements OrderService {
         // Registrar cambio en historial
         recordStatusChange(updatedOrder, OrderStatus.PAID, "Payment processed successfully");
 
-        return updatedOrder;
+        return OrderMapper.toResponse(updatedOrder);
     }
 
     @Override
     @Transactional
-    public Order shipOrder(Long orderId) {
+    public OrderResponse shipOrder(Long orderId) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new IllegalArgumentException("Order with ID " + orderId + " not found"));
 
@@ -185,12 +182,12 @@ public class OrderServiceImpl implements OrderService {
         order.setStatus(OrderStatus.SHIPPED);
         Order updatedOrder = orderRepository.save(order);
         recordStatusChange(updatedOrder, OrderStatus.SHIPPED, "Order shipped");
-        return updatedOrder;
+        return OrderMapper.toResponse(updatedOrder);
     }
 
     @Override
     @Transactional
-    public Order deliverOrder(Long orderId) {
+    public OrderResponse deliverOrder(Long orderId) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new IllegalArgumentException("Order with ID " + orderId + " not found"));
 
@@ -201,17 +198,17 @@ public class OrderServiceImpl implements OrderService {
         order.setStatus(OrderStatus.DELIVERED);
         Order updatedOrder = orderRepository.save(order);
         recordStatusChange(updatedOrder, OrderStatus.DELIVERED, "Order delivered");
-        return updatedOrder;
+        return OrderMapper.toResponse(updatedOrder);
     }
 
     @Override
     @Transactional
-    public Order cancelOrder(Long orderId) {
-        Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new IllegalArgumentException("Order with ID " + orderId + " not found"));
+    public OrderResponse cancelOrder(CancelOrderRequest request) {
+        Order order = orderRepository.findById(request.orderId())
+                .orElseThrow(() -> new IllegalArgumentException("Order with ID " + request.orderId() + " not found"));
 
         if (order.getStatus() == OrderStatus.CANCELLED) {
-            return order;
+            return OrderMapper.toResponse(order);
         }
         if (order.getStatus() == OrderStatus.SHIPPED) {
             throw new IllegalArgumentException("Shipped orders cannot be cancelled");
@@ -228,8 +225,11 @@ public class OrderServiceImpl implements OrderService {
 
         order.setStatus(OrderStatus.CANCELLED);
         Order updatedOrder = orderRepository.save(order);
-        recordStatusChange(updatedOrder, OrderStatus.CANCELLED, "Order cancelled");
-        return updatedOrder;
+        String notes = request.reason() != null && !request.reason().isBlank()
+                ? request.reason()
+                : "Order cancelled";
+        recordStatusChange(updatedOrder, OrderStatus.CANCELLED, notes);
+        return OrderMapper.toResponse(updatedOrder);
     }
 
     @Override

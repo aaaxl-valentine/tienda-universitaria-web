@@ -1,5 +1,6 @@
 package co.unimagdalena.tiendauni.service;
 
+import co.unimagdalena.tiendauni.DTOs.InventoryDTOs.InventoryResponse;
 import co.unimagdalena.tiendauni.entity.Inventory;
 import co.unimagdalena.tiendauni.entity.Product;
 import co.unimagdalena.tiendauni.repository.InventoryRepository;
@@ -19,23 +20,25 @@ public class InventoryServiceImpl implements InventoryService {
     private final ProductRepository productRepository;
 
     @Override
-    public Optional<Inventory> findByProductId(Long productId) {
-        return inventoryRepository.findByProductId(productId);
+    public Optional<InventoryResponse> findByProductId(Long productId) {
+        return inventoryRepository.findByProductId(productId).map(this::toResponse);
     }
 
     @Override
-    public Optional<Inventory> findByProductSku(String sku) {
-        return inventoryRepository.findByProductSku(sku);
+    public Optional<InventoryResponse> findByProductSku(String sku) {
+        return inventoryRepository.findByProductSku(sku).map(this::toResponse);
     }
 
     @Override
-    public List<Inventory> getLowStockInventories() {
-        return inventoryRepository.findLowStockInventories();
+    public List<InventoryResponse> getLowStockInventories() {
+        return inventoryRepository.findLowStockInventories().stream()
+                .map(this::toResponse)
+                .toList();
     }
 
     @Override
     @Transactional
-    public Inventory createInventoryForProduct(Long productId, Integer initialStock, Integer minimumStock) {
+    public InventoryResponse createInventoryForProduct(Long productId, Integer initialStock, Integer minimumStock) {
         // Validar valores de stock
         validateStockValues(initialStock, minimumStock);
 
@@ -54,12 +57,12 @@ public class InventoryServiceImpl implements InventoryService {
                 .product(product)
                 .build();
 
-        return inventoryRepository.save(inventory);
+        return toResponse(inventoryRepository.save(inventory));
     }
 
     @Override
     @Transactional
-    public Inventory updateAvailableStock(Long productId, Integer newStock) {
+    public InventoryResponse updateAvailableStock(Long productId, Integer newStock) {
         if (newStock < 0) {
             throw new IllegalArgumentException("Stock cannot be negative");
         }
@@ -68,12 +71,12 @@ public class InventoryServiceImpl implements InventoryService {
                 .orElseThrow(() -> new IllegalArgumentException("Inventory not found for product ID: " + productId));
 
         inventory.setAvailableStock(newStock);
-        return inventoryRepository.save(inventory);
+        return toResponse(inventoryRepository.save(inventory));
     }
 
     @Override
     @Transactional
-    public Inventory updateMinimumStock(Long productId, Integer newMinimumStock) {
+    public InventoryResponse updateMinimumStock(Long productId, Integer newMinimumStock) {
         if (newMinimumStock < 0) {
             throw new IllegalArgumentException("Minimum stock cannot be negative");
         }
@@ -82,12 +85,12 @@ public class InventoryServiceImpl implements InventoryService {
                 .orElseThrow(() -> new IllegalArgumentException("Inventory not found for product ID: " + productId));
 
         inventory.setMinimumStock(newMinimumStock);
-        return inventoryRepository.save(inventory);
+        return toResponse(inventoryRepository.save(inventory));
     }
 
     @Override
     @Transactional
-    public Inventory incrementStock(Long productId, Integer quantity) {
+    public InventoryResponse incrementStock(Long productId, Integer quantity) {
         if (quantity <= 0) {
             throw new IllegalArgumentException("Quantity must be positive");
         }
@@ -96,12 +99,12 @@ public class InventoryServiceImpl implements InventoryService {
                 .orElseThrow(() -> new IllegalArgumentException("Inventory not found for product ID: " + productId));
 
         inventory.setAvailableStock(inventory.getAvailableStock() + quantity);
-        return inventoryRepository.save(inventory);
+        return toResponse(inventoryRepository.save(inventory));
     }
 
     @Override
     @Transactional
-    public Inventory decrementStock(Long productId, Integer quantity) {
+    public InventoryResponse decrementStock(Long productId, Integer quantity) {
         if (quantity <= 0) {
             throw new IllegalArgumentException("Quantity must be positive");
         }
@@ -115,7 +118,7 @@ public class InventoryServiceImpl implements InventoryService {
         }
 
         inventory.setAvailableStock(newStock);
-        return inventoryRepository.save(inventory);
+        return toResponse(inventoryRepository.save(inventory));
     }
 
     @Override
@@ -140,5 +143,15 @@ public class InventoryServiceImpl implements InventoryService {
         if (minimumStock < 0) {
             throw new IllegalArgumentException("Minimum stock cannot be negative");
         }
+    }
+
+    private InventoryResponse toResponse(Inventory inventory) {
+        return new InventoryResponse(
+                inventory.getId(),
+                inventory.getAvailableStock(),
+                inventory.getMinimumStock(),
+                inventory.getUpdatedAt(),
+                inventory.getProduct() != null ? inventory.getProduct().getId() : null
+        );
     }
 }
