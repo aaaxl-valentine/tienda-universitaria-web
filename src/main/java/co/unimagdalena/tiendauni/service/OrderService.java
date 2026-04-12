@@ -1,5 +1,8 @@
 package co.unimagdalena.tiendauni.service;
 
+import co.unimagdalena.tiendauni.DTOs.OrderDTOs.CancelOrderRequest;
+import co.unimagdalena.tiendauni.DTOs.OrderDTOs.CreateOrderRequest;
+import co.unimagdalena.tiendauni.DTOs.OrderDTOs.OrderResponse;
 import co.unimagdalena.tiendauni.entity.Order;
 import co.unimagdalena.tiendauni.entity.OrderStatusHistory;
 
@@ -9,33 +12,19 @@ import java.util.Optional;
 public interface OrderService {
 
     /**
-     * DTO para crear un ítem de pedido (request)
-     */
-    record CreateOrderItemRequest(Long productId, Integer quantity) {}
-
-    /**
-     * DTO para crear un pedido (request)
-     */
-    record CreateOrderRequest(
-            Long customerId,
-            Long addressId,
-            List<CreateOrderItemRequest> items
-    ) {}
-
-    /**
      * Crea un nuevo pedido con todas las validaciones de negocio
      */
-    Order createOrder(CreateOrderRequest request);
+    OrderResponse createOrder(CreateOrderRequest request);
 
     /**
      * Busca un pedido por ID
      */
-    Optional<Order> findById(Long id);
+    Optional<OrderResponse> findById(Long id);
 
     /**
      * Busca todos los pedidos de un cliente
      */
-    List<Order> findByCustomerId(Long customerId);
+    List<OrderResponse> findByCustomerId(Long customerId);
 
     /**
      * Obtiene el total de un pedido (suma de subtotales de ítems)
@@ -46,22 +35,22 @@ public interface OrderService {
      * Procesa el pago del pedido (CREATED → PAID)
      * Valida stock y descuenta inventario
      */
-    Order processPayment(Long orderId);
+    OrderResponse processPayment(Long orderId);
 
     /**
      * Despacha un pedido (PAID → SHIPPED)
      */
-    Order shipOrder(Long orderId);
+    OrderResponse shipOrder(Long orderId);
 
     /**
      * Marca un pedido como entregado (SHIPPED → DELIVERED)
      */
-    Order deliverOrder(Long orderId);
+    OrderResponse deliverOrder(Long orderId);
 
     /**
      * Cancela un pedido según reglas de estado y reversión de stock
      */
-    Order cancelOrder(Long orderId);
+    OrderResponse cancelOrder(CancelOrderRequest request);
 
     /**
      * Obtiene el historial de cambios de estado de un pedido

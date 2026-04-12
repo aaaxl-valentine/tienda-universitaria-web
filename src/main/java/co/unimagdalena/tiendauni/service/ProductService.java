@@ -1,9 +1,10 @@
 package co.unimagdalena.tiendauni.service;
 
-import co.unimagdalena.tiendauni.entity.Product;
+import co.unimagdalena.tiendauni.DTOs.ProductDTOs.CreateProductRequest;
+import co.unimagdalena.tiendauni.DTOs.ProductDTOs.ProductResponse;
+import co.unimagdalena.tiendauni.DTOs.ProductDTOs.UpdateProductRequest;
 
 
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
@@ -12,23 +13,22 @@ public interface ProductService {
     /**
      * Crea un nuevo producto con validaciones de negocio
      */
-    Product createProduct(String sku, String name, String description, BigDecimal price, Long categoryId);
+    ProductResponse createProduct(CreateProductRequest request);
 
     /**
      * Crea un nuevo producto con inventario inicial
      */
-    Product createProductWithInventory(String sku, String name, String description, BigDecimal price,
-                                     Long categoryId, Integer initialStock, Integer minimumStock);
+    ProductResponse createProductWithInventory(CreateProductRequest request, Integer initialStock, Integer minimumStock);
 
     /**
      * Busca un producto por ID
      */
-    Optional<Product> findById(Long id);
+    Optional<ProductResponse> findById(Long id);
 
     /**
      * Busca un producto por SKU
      */
-    Optional<Product> findBySku(String sku);
+    Optional<ProductResponse> findBySku(String sku);
 
     /**
      * Verifica si existe un producto con el SKU dado
@@ -38,25 +38,25 @@ public interface ProductService {
     /**
      * Actualiza un producto existente con validaciones
      */
-    Product updateProduct(Long productId, String name, String description, BigDecimal price, Long categoryId);
+    ProductResponse updateProduct(Long productId, UpdateProductRequest request);
 
     /**
      * Activa/desactiva un producto con validaciones de negocio
      */
-    Product setProductActive(Long productId, boolean active);
+    ProductResponse setProductActive(Long productId, boolean active);
 
     /**
      * Obtiene todos los productos
      */
-    List<Product> findAll();
+    List<ProductResponse> findAll();
 
     /**
      * Obtiene productos por categoría
      */
-    List<Product> findByCategory(Long categoryId);
+    List<ProductResponse> findByCategory(Long categoryId);
 
     /**
      * Obtiene productos activos
      */
-    List<Product> findActiveProducts();
+    List<ProductResponse> findActiveProducts();
 }

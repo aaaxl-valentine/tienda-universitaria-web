@@ -1,8 +1,10 @@
 package co.unimagdalena.tiendauni.service;
 
-import co.unimagdalena.tiendauni.entity.Inventory;
-import co.unimagdalena.tiendauni.entity.Order;
-import co.unimagdalena.tiendauni.entity.Product;
+import co.unimagdalena.tiendauni.DTOs.CustomerDTOs.TopCustomerResponse;
+import co.unimagdalena.tiendauni.DTOs.OrderDTOs.MonthlyIncomeResponse;
+import co.unimagdalena.tiendauni.DTOs.OrderDTOs.OrderResponse;
+import co.unimagdalena.tiendauni.DTOs.ProductDTOs.BestSellingProductResponse;
+import co.unimagdalena.tiendauni.DTOs.ProductDTOs.LowStockProductResponse;
 import co.unimagdalena.tiendauni.enums.OrderStatus;
 
 import java.math.BigDecimal;
@@ -11,20 +13,20 @@ import java.util.List;
 
 public interface ReportService {
 
-    List<Inventory> getLowStockProducts();
+    List<LowStockProductResponse> getLowStockProducts();
 
-    List<Inventory> getProductsWithInsufficientStock();
+    List<LowStockProductResponse> getProductsWithInsufficientStock();
 
-    List<Order> getOrdersByFilters(Long customerId,
-                                   OrderStatus status,
-                                   LocalDateTime startDate,
-                                   LocalDateTime endDate,
-                                   BigDecimal minTotal,
-                                   BigDecimal maxTotal);
+    List<OrderResponse> getOrdersByFilters(Long customerId,
+                                           OrderStatus status,
+                                           LocalDateTime startDate,
+                                           LocalDateTime endDate,
+                                           BigDecimal minTotal,
+                                           BigDecimal maxTotal);
 
-    List<Product> getTopSellingProductsByPeriod(LocalDateTime startDate, LocalDateTime endDate);
+    List<BestSellingProductResponse> getTopSellingProductsByPeriod(LocalDateTime startDate, LocalDateTime endDate);
 
-    List<Object[]> getMonthlyRevenue(LocalDateTime startDate, LocalDateTime endDate);
+    List<MonthlyIncomeResponse> getMonthlyRevenue(LocalDateTime startDate, LocalDateTime endDate);
 
-    List<Object[]> getTopCustomersByRevenue(LocalDateTime startDate, LocalDateTime endDate);
+    List<TopCustomerResponse> getTopCustomersByRevenue(LocalDateTime startDate, LocalDateTime endDate);
 }
