@@ -1,7 +1,7 @@
 package co.unimagdalena.tiendauni.repository;
 
 import co.unimagdalena.tiendauni.entity.Order;
-import co.unimagdalena.tiendauni.enums.OrderStatus;
+import co.unimagdalena.tiendauni.entity.enums.OrderStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

@@ -6,9 +6,9 @@ import co.unimagdalena.tiendauni.DTOs.OrderDTOs.OrderResponse;
 import co.unimagdalena.tiendauni.DTOs.OrderItemDTOs.CreateOrderItemRequest;
 import co.unimagdalena.tiendauni.entity.*;
 import co.unimagdalena.tiendauni.repository.*;
-import co.unimagdalena.tiendauni.enums.CustomerStatus;
-import co.unimagdalena.tiendauni.enums.OrderStatus;
-import co.unimagdalena.tiendauni.service.mapper.OrderMapper;
+import co.unimagdalena.tiendauni.entity.enums.CustomerStatus;
+import co.unimagdalena.tiendauni.entity.enums.OrderStatus;
+import co.unimagdalena.tiendauni.service.mappers.OrderMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,14 +32,9 @@ public class OrderServiceImpl implements OrderService {
     @Override
     @Transactional
     public OrderResponse createOrder(CreateOrderRequest request) {
-        // Validar que el cliente existe
-        Customer customer = customerRepository.findById(request.customerId())
-                .orElseThrow(() -> new IllegalArgumentException("Customer with ID " + request.customerId() + " not found"));
-
-        // Validar que el cliente está activo
-        if (customer.getStatus() != CustomerStatus.ACTIVE) {
-            throw new IllegalArgumentException("Customer is not active");
-        }
+        Customer customer = customerRepository.findByIdAndStatus(request.customerId(), CustomerStatus.ACTIVE)
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "Customer with ID " + request.customerId() + " not found or is not active"));
 
         // Validar que la dirección existe
         Address address = addressRepository.findById(request.addressId())

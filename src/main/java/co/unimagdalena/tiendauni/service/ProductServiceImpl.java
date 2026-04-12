@@ -8,7 +8,7 @@ import co.unimagdalena.tiendauni.entity.Category;
 import co.unimagdalena.tiendauni.repository.ProductRepository;
 import co.unimagdalena.tiendauni.repository.CategoryRepository;
 import co.unimagdalena.tiendauni.repository.OrderItemRepository;
-import co.unimagdalena.tiendauni.service.mapper.ProductMapper;
+import co.unimagdalena.tiendauni.service.mappers.ProductMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

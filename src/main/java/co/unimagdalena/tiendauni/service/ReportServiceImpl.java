@@ -8,11 +8,11 @@ import co.unimagdalena.tiendauni.DTOs.ProductDTOs.LowStockProductResponse;
 import co.unimagdalena.tiendauni.entity.Customer;
 import co.unimagdalena.tiendauni.entity.Inventory;
 import co.unimagdalena.tiendauni.entity.Product;
-import co.unimagdalena.tiendauni.enums.OrderStatus;
+import co.unimagdalena.tiendauni.entity.enums.OrderStatus;
 import co.unimagdalena.tiendauni.repository.InventoryRepository;
 import co.unimagdalena.tiendauni.repository.OrderItemRepository;
 import co.unimagdalena.tiendauni.repository.OrderRepository;
-import co.unimagdalena.tiendauni.service.mapper.OrderMapper;
+import co.unimagdalena.tiendauni.service.mappers.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

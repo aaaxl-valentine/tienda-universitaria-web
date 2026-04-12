@@ -1,6 +1,6 @@
 package co.unimagdalena.tiendauni.DTOs;
 
-import co.unimagdalena.tiendauni.enums.OrderStatus;
+import co.unimagdalena.tiendauni.entity.enums.OrderStatus;
 import co.unimagdalena.tiendauni.DTOs.OrderItemDTOs.CreateOrderItemRequest;
 
 import java.io.Serializable;

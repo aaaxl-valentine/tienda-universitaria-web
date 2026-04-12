@@ -1,4 +1,4 @@
-package co.unimagdalena.tiendauni.service.mapper;
+package co.unimagdalena.tiendauni.service.mappers;
 
 import co.unimagdalena.tiendauni.DTOs.CategoryDTOs.CreateCategoryRequest;
 import co.unimagdalena.tiendauni.DTOs.CategoryDTOs.CategoryResponse;
