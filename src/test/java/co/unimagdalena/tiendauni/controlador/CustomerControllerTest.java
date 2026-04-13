@@ -67,7 +67,7 @@ public class CustomerControllerTest {
 
         assertThat(result.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(result.getBody()).hasSize(1);
-        assertThat(result.getBody().get(0)).isEqualTo(response);
+        assertThat(result.getBody().getFirst()).isEqualTo(response);
     }
 
     @Test
