@@ -236,15 +236,7 @@ public class OrderServiceImpl implements OrderService {
         return orderStatusHistoryRepository.findByOrderIdOrderByChangedAtAsc(orderId);
     }
 
-    /**
-     * Registra un cambio de estado en el historial del pedido
-     */
-    private void recordStatusChange(Long orderId, OrderStatus newStatus, String notes) {
-        Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new IllegalArgumentException("Order with ID " + orderId + " not found"));
 
-        recordStatusChange(order, newStatus, notes);
-    }
 
     private void recordStatusChange(Order order, OrderStatus newStatus, String notes) {
         OrderStatusHistory history = OrderStatusHistory.builder()

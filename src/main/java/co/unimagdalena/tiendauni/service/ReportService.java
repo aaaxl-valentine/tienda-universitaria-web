@@ -13,9 +13,9 @@ import java.util.List;
 
 public interface ReportService {
 
+
     List<LowStockProductResponse> getLowStockProducts();
 
-    List<LowStockProductResponse> getProductsWithInsufficientStock();
 
     List<OrderResponse> getOrdersByFilters(Long customerId,
                                            OrderStatus status,
