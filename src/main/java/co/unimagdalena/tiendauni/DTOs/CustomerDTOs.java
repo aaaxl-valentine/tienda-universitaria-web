@@ -1,15 +1,18 @@
 package co.unimagdalena.tiendauni.DTOs;
 
 import co.unimagdalena.tiendauni.entity.enums.CustomerStatus;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
 public class CustomerDTOs {
     public record CreateCustomerRequest(
-            String firstName,
+
+            @NotBlank  String firstName,
             String lastName,
-            String email,
+            @Email @NotBlank String email,
             CustomerStatus status
     ) implements Serializable {}
 

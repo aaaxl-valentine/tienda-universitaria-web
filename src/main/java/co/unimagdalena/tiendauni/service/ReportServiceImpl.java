@@ -36,12 +36,6 @@ public class ReportServiceImpl implements ReportService {
                 .toList();
     }
 
-    @Override
-    public List<LowStockProductResponse> getProductsWithInsufficientStock() {
-        return inventoryRepository.findProductsWithInsufficientStock().stream()
-                .map(this::toLowStockProductResponse)
-                .toList();
-    }
 
     @Override
     public List<OrderResponse> getOrdersByFilters(Long customerId,

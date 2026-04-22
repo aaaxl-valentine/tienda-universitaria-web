@@ -28,15 +28,11 @@ public class ReportController {
 
     private final ReportService reportService;
 
-    @GetMapping("/low-stock")
+    @GetMapping("/low-stock-products")
     public ResponseEntity<List<LowStockProductResponse>> getLowStockProducts() {
         return ResponseEntity.ok(reportService.getLowStockProducts());
     }
 
-    @GetMapping("/insufficient-stock")
-    public ResponseEntity<List<LowStockProductResponse>> getProductsWithInsufficientStock() {
-        return ResponseEntity.ok(reportService.getProductsWithInsufficientStock());
-    }
 
     @GetMapping("/orders")
     public ResponseEntity<List<OrderResponse>> getOrdersByFilters(
