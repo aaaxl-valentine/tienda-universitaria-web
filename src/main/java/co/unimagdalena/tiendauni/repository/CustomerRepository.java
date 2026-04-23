@@ -20,6 +20,4 @@ public interface CustomerRepository extends JpaRepository<Customer, Long> {
 
     // Verificar si un cliente existe y está activo
     boolean existsByIdAndStatus(Long id, CustomerStatus status);
-
-    Optional<Customer> findByIdAndStatus(Long id, CustomerStatus status);
 }

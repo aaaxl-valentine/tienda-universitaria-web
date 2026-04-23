@@ -6,7 +6,7 @@ import co.unimagdalena.tiendauni.DTOs.ProductDTOs.UpdateProductRequest;
 
 
 import java.util.List;
-import java.util.Optional;
+
 
 public interface ProductService {
 
@@ -23,17 +23,12 @@ public interface ProductService {
     /**
      * Busca un producto por ID
      */
-    Optional<ProductResponse> findById(Long id);
+    ProductResponse findById(Long id);
 
     /**
      * Busca un producto por SKU
      */
-    Optional<ProductResponse> findBySku(String sku);
-
-    /**
-     * Verifica si existe un producto con el SKU dado
-     */
-    boolean existsBySku(String sku);
+    ProductResponse findBySku(String sku);
 
     /**
      * Actualiza un producto existente con validaciones

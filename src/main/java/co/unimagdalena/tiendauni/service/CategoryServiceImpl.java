@@ -26,7 +26,7 @@ public class CategoryServiceImpl implements CategoryService {
     @Transactional(readOnly = true)
     public CategoryResponse get(Long id) {
         return categoryRepository.findById(id).map(CategoryMapper::toResponse).orElseThrow(
-                () -> new ResourceNotFoundException("Categoria %d no encontrada")
+                () -> new ResourceNotFoundException("Categoria %d no encontrada".formatted(id))
         );
     }
 
@@ -38,6 +38,9 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public void delete(Long id) {
+        if (!categoryRepository.existsById(id)) {
+            throw new ResourceNotFoundException("Categoria %d no encontrada".formatted(id));
+        }
         categoryRepository.deleteById(id);
     }
 }

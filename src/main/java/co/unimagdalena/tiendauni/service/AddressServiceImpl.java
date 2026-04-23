@@ -45,6 +45,9 @@ public class AddressServiceImpl implements AddressService {
 
     @Override
     public void deleteAddress(Long id) {
+        if (!addressRepository.existsById(id)) {
+            throw new ResourceNotFoundException("Direccion %d no encontrada".formatted(id));
+        }
         addressRepository.deleteById(id);
     }
 

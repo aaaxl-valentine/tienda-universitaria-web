@@ -4,6 +4,7 @@ import co.unimagdalena.tiendauni.DTOs.OrderDTOs.CancelOrderRequest;
 import co.unimagdalena.tiendauni.DTOs.OrderDTOs.CreateOrderRequest;
 import co.unimagdalena.tiendauni.DTOs.OrderDTOs.OrderResponse;
 import co.unimagdalena.tiendauni.DTOs.OrderItemDTOs.CreateOrderItemRequest;
+import co.unimagdalena.tiendauni.NotFoundException.ConflictException;
 import co.unimagdalena.tiendauni.entity.Address;
 import co.unimagdalena.tiendauni.entity.Customer;
 import co.unimagdalena.tiendauni.entity.Order;
@@ -34,7 +35,6 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -44,8 +44,6 @@ class OrderServiceImplTest {
 
     @Mock
     private OrderRepository orderRepository;
-    @Mock
-    private OrderItemRepository orderItemRepository;
     @Mock
     private CustomerRepository customerRepository;
     @Mock
@@ -66,7 +64,7 @@ class OrderServiceImplTest {
         Address address = addressForCustomer(10L, customer);
         CreateOrderRequest request = new CreateOrderRequest(null, 1L, 10L, List.of());
 
-        when(customerRepository.findByIdAndStatus(1L, CustomerStatus.ACTIVE)).thenReturn(Optional.of(customer));
+        when(customerRepository.findById(1L)).thenReturn(Optional.of(customer));
         when(addressRepository.findById(10L)).thenReturn(Optional.of(address));
 
         assertThatThrownBy(() -> service.createOrder(request))
@@ -83,7 +81,7 @@ class OrderServiceImplTest {
         CreateOrderItemRequest badItem = new CreateOrderItemRequest(0, null, null, 100L);
         CreateOrderRequest request = new CreateOrderRequest(null, 1L, 10L, List.of(badItem));
 
-        when(customerRepository.findByIdAndStatus(1L, CustomerStatus.ACTIVE)).thenReturn(Optional.of(customer));
+        when(customerRepository.findById(1L)).thenReturn(Optional.of(customer));
         when(addressRepository.findById(10L)).thenReturn(Optional.of(address));
 
         assertThatThrownBy(() -> service.createOrder(request))
@@ -105,7 +103,7 @@ class OrderServiceImplTest {
         CreateOrderItemRequest itemB = new CreateOrderItemRequest(3, null, null, 200L);
         CreateOrderRequest request = new CreateOrderRequest(null, 1L, 10L, List.of(itemA, itemB));
 
-        when(customerRepository.findByIdAndStatus(1L, CustomerStatus.ACTIVE)).thenReturn(Optional.of(customer));
+        when(customerRepository.findById(1L)).thenReturn(Optional.of(customer));
         when(addressRepository.findById(10L)).thenReturn(Optional.of(address));
         when(productRepository.findById(100L)).thenReturn(Optional.of(productA));
         when(productRepository.findById(200L)).thenReturn(Optional.of(productB));
@@ -211,8 +209,8 @@ class OrderServiceImplTest {
         when(orderRepository.findById(33L)).thenReturn(Optional.of(createdOrder));
 
         assertThatThrownBy(() -> service.shipOrder(33L))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("Only orders in PAID status can be shipped");
+                .isInstanceOf(ConflictException.class)
+                .hasMessageContaining("Solo se pueden enviar pedidos en estado PAID");
 
         verify(orderRepository, never()).save(any(Order.class));
     }
@@ -223,8 +221,8 @@ class OrderServiceImplTest {
         when(orderRepository.findById(34L)).thenReturn(Optional.of(paidOrder));
 
         assertThatThrownBy(() -> service.deliverOrder(34L))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("Only orders in SHIPPED status can be delivered");
+                .isInstanceOf(ConflictException.class)
+                .hasMessageContaining("Solo se pueden entregar pedidos en estado SHIPPED");
 
         verify(orderRepository, never()).save(any(Order.class));
     }

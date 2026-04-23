@@ -16,7 +16,7 @@ import java.util.List;
 @Validated
 public class CategoryController {
 
-    private CategoryService categoryService;
+    final CategoryService categoryService;
 
     @PostMapping
     public ResponseEntity<CategoryResponse> create(@Validated

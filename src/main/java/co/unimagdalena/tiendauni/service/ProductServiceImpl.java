@@ -3,6 +3,8 @@ package co.unimagdalena.tiendauni.service;
 import co.unimagdalena.tiendauni.DTOs.ProductDTOs.CreateProductRequest;
 import co.unimagdalena.tiendauni.DTOs.ProductDTOs.ProductResponse;
 import co.unimagdalena.tiendauni.DTOs.ProductDTOs.UpdateProductRequest;
+import co.unimagdalena.tiendauni.NotFoundException.ConflictException;
+import co.unimagdalena.tiendauni.NotFoundException.ResourceNotFoundException;
 import co.unimagdalena.tiendauni.entity.Product;
 import co.unimagdalena.tiendauni.entity.Category;
 import co.unimagdalena.tiendauni.repository.ProductRepository;
@@ -15,7 +17,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -31,7 +32,7 @@ public class ProductServiceImpl implements ProductService {
     public ProductResponse createProduct(CreateProductRequest request) {
         // Validación: SKU único
         if (productRepository.existsBySku(request.sku())) {
-            throw new IllegalArgumentException("Product with SKU '" + request.sku() + "' already exists");
+            throw new ConflictException("Ya existe un producto con el SKU '" + request.sku() + "'");
         }
 
         // Validación: precio mayor que cero
@@ -41,7 +42,7 @@ public class ProductServiceImpl implements ProductService {
 
         // Validación: categoría existente
         Category category = categoryRepository.findById(request.categoryId())
-                .orElseThrow(() -> new IllegalArgumentException("Category with ID " + request.categoryId() + " does not exist"));
+                .orElseThrow(() -> new ResourceNotFoundException("La categoría con ID " + request.categoryId() + " no existe"));
 
         Product product = ProductMapper.toEntity(request, category);
         return ProductMapper.toResponse(productRepository.save(product));
@@ -63,25 +64,24 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public Optional<ProductResponse> findById(Long id) {
-        return productRepository.findById(id).map(ProductMapper::toResponse);
+    public ProductResponse findById(Long id) {
+        return productRepository.findById(id)
+                .map(ProductMapper::toResponse)
+                .orElseThrow(() -> new ResourceNotFoundException("Product " + id + " no existe"));
     }
 
     @Override
-    public Optional<ProductResponse> findBySku(String sku) {
-        return productRepository.findBySku(sku).map(ProductMapper::toResponse);
-    }
-
-    @Override
-    public boolean existsBySku(String sku) {
-        return productRepository.existsBySku(sku);
+    public ProductResponse findBySku(String sku) {
+        return productRepository.findBySku(sku)
+                .map(ProductMapper::toResponse)
+                .orElseThrow(() -> new ResourceNotFoundException("Product " + sku + " no existe"));
     }
 
     @Override
     @Transactional
     public ProductResponse updateProduct(Long productId, UpdateProductRequest request) {
         Product product = productRepository.findById(productId)
-                .orElseThrow(() -> new IllegalArgumentException("Product with ID " + productId + " not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Producto con ID " + productId + " no encontrado"));
 
         // Validación: precio mayor que cero
         if (request.price() != null && request.price().compareTo(BigDecimal.ZERO) <= 0) {
@@ -91,7 +91,7 @@ public class ProductServiceImpl implements ProductService {
         // Validación: categoría existente (si se proporciona)
         if (request.categoryId() != null) {
             Category category = categoryRepository.findById(request.categoryId())
-                    .orElseThrow(() -> new IllegalArgumentException("Category with ID " + request.categoryId() + " does not exist"));
+                    .orElseThrow(() -> new ResourceNotFoundException("La categoría con ID " + request.categoryId() + " no existe"));
             product.setCategory(category);
         }
 
@@ -108,7 +108,7 @@ public class ProductServiceImpl implements ProductService {
     @Transactional
     public ProductResponse setProductActive(Long productId, boolean active) {
         Product product = productRepository.findById(productId)
-                .orElseThrow(() -> new IllegalArgumentException("Product with ID " + productId + " not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Producto con ID " + productId + " no encontrado"));
 
         // Si se está desactivando, verificar que no tenga pedidos activos
         if (!active) {
@@ -120,7 +120,7 @@ public class ProductServiceImpl implements ProductService {
                     });
 
             if (hasActiveOrders) {
-                throw new IllegalArgumentException("Cannot deactivate product with active orders");
+                throw new ConflictException("No se puede desactivar un producto con pedidos activos");
             }
         }
 
@@ -139,7 +139,7 @@ public class ProductServiceImpl implements ProductService {
     public List<ProductResponse> findByCategory(Long categoryId) {
         // Validar que la categoría existe
         if (!categoryRepository.existsById(categoryId)) {
-            throw new IllegalArgumentException("Category with ID " + categoryId + " does not exist");
+            throw new ResourceNotFoundException("La categoría con ID " + categoryId + " no existe");
         }
 
         return productRepository.findByCategoryId(categoryId).stream()

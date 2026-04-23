@@ -3,6 +3,7 @@ package co.unimagdalena.tiendauni.Servicios;
 import co.unimagdalena.tiendauni.DTOs.ProductDTOs.CreateProductRequest;
 import co.unimagdalena.tiendauni.DTOs.ProductDTOs.ProductResponse;
 import co.unimagdalena.tiendauni.DTOs.ProductDTOs.UpdateProductRequest;
+import co.unimagdalena.tiendauni.NotFoundException.ConflictException;
 import co.unimagdalena.tiendauni.entity.Category;
 import co.unimagdalena.tiendauni.entity.Order;
 import co.unimagdalena.tiendauni.entity.OrderItem;
@@ -53,8 +54,8 @@ class ProductServiceImplTest {
         when(productRepository.existsBySku("SKU-1")).thenReturn(true);
 
         assertThatThrownBy(() -> service.createProduct(request))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("already exists");
+                .isInstanceOf(ConflictException.class)
+                .hasMessageContaining("Ya existe un producto con el SKU");
 
         verify(productRepository, never()).save(any(Product.class));
     }
@@ -102,8 +103,8 @@ class ProductServiceImplTest {
         when(orderItemRepository.findByProductId(10L)).thenReturn(List.of(orderItem));
 
         assertThatThrownBy(() -> service.setProductActive(10L, false))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("active orders");
+                .isInstanceOf(ConflictException.class)
+                .hasMessageContaining("pedidos activos");
 
         verify(productRepository, never()).save(any(Product.class));
     }
