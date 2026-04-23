@@ -41,16 +41,13 @@ public class ProductController {
 
     @GetMapping("/{id}")
     public ResponseEntity<ProductResponse> getProduct(@PathVariable long id) {
-        return productService.findById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+        return ResponseEntity.ok(productService.findById(id));
     }
 
     @GetMapping("/sku/{sku}")
     public ResponseEntity<ProductResponse> getProductBySku(@PathVariable String sku) {
-        return productService.findBySku(sku)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+
+        return ResponseEntity.ok(productService.findBySku(sku));
     }
 
     @GetMapping

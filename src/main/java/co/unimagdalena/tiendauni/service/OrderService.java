@@ -3,11 +3,9 @@ package co.unimagdalena.tiendauni.service;
 import co.unimagdalena.tiendauni.DTOs.OrderDTOs.CancelOrderRequest;
 import co.unimagdalena.tiendauni.DTOs.OrderDTOs.CreateOrderRequest;
 import co.unimagdalena.tiendauni.DTOs.OrderDTOs.OrderResponse;
-import co.unimagdalena.tiendauni.entity.Order;
 import co.unimagdalena.tiendauni.entity.OrderStatusHistory;
 
 import java.util.List;
-import java.util.Optional;
 
 public interface OrderService {
 
@@ -19,7 +17,7 @@ public interface OrderService {
     /**
      * Busca un pedido por ID
      */
-    Optional<OrderResponse> findById(Long id);
+    OrderResponse findById(Long id);
 
     /**
      * Busca todos los pedidos de un cliente

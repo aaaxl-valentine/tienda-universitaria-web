@@ -4,6 +4,8 @@ import co.unimagdalena.tiendauni.DTOs.OrderDTOs.CancelOrderRequest;
 import co.unimagdalena.tiendauni.DTOs.OrderDTOs.CreateOrderRequest;
 import co.unimagdalena.tiendauni.DTOs.OrderDTOs.OrderResponse;
 import co.unimagdalena.tiendauni.DTOs.OrderItemDTOs.CreateOrderItemRequest;
+import co.unimagdalena.tiendauni.NotFoundException.ConflictException;
+import co.unimagdalena.tiendauni.NotFoundException.ResourceNotFoundException;
 import co.unimagdalena.tiendauni.entity.*;
 import co.unimagdalena.tiendauni.repository.*;
 import co.unimagdalena.tiendauni.entity.enums.CustomerStatus;
@@ -15,14 +17,13 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Optional;
+
 
 @Service
 @RequiredArgsConstructor
 public class OrderServiceImpl implements OrderService {
 
     private final OrderRepository orderRepository;
-    private final OrderItemRepository orderItemRepository;
     private final CustomerRepository customerRepository;
     private final AddressRepository addressRepository;
     private final ProductRepository productRepository;
@@ -32,17 +33,20 @@ public class OrderServiceImpl implements OrderService {
     @Override
     @Transactional
     public OrderResponse createOrder(CreateOrderRequest request) {
-        Customer customer = customerRepository.findByIdAndStatus(request.customerId(), CustomerStatus.ACTIVE)
-                .orElseThrow(() -> new IllegalArgumentException(
-                        "Customer with ID " + request.customerId() + " not found or is not active"));
+        Customer customer = customerRepository.findById(request.customerId())
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Cliente con ID " + request.customerId() + " no encontrado"));
+        if (customer.getStatus() != CustomerStatus.ACTIVE) {
+            throw new ConflictException("El cliente con ID " + request.customerId() + " no está activo");
+        }
 
         // Validar que la dirección existe
         Address address = addressRepository.findById(request.addressId())
-                .orElseThrow(() -> new IllegalArgumentException("Address with ID " + request.addressId() + " not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Dirección con ID " + request.addressId() + " no encontrada"));
 
         // Validar que la dirección pertenece al cliente
         if (!address.getCustomer().getId().equals(request.customerId())) {
-            throw new IllegalArgumentException("Address does not belong to the customer");
+            throw new ConflictException("La dirección no pertenece al cliente");
         }
 
         // Validar que hay al menos un ítem
@@ -63,11 +67,11 @@ public class OrderServiceImpl implements OrderService {
 
             // Validar que el producto existe
             Product product = productRepository.findById(itemRequest.productId())
-                    .orElseThrow(() -> new IllegalArgumentException("Product with ID " + itemRequest.productId() + " not found"));
+                    .orElseThrow(() -> new ResourceNotFoundException("Producto con ID " + itemRequest.productId() + " no encontrado"));
 
             // Validar que el producto está activo
             if (!product.getActive()) {
-                throw new IllegalArgumentException("Product with ID " + itemRequest.productId() + " is not active");
+                throw new ConflictException("El producto con ID " + itemRequest.productId() + " no está activo");
             }
 
             // Crear ítem: precio unitario se toma del producto
@@ -99,15 +103,17 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public Optional<OrderResponse> findById(Long id) {
-        return orderRepository.findById(id).map(OrderMapper::toResponse);
+    public OrderResponse findById(Long id) {
+        return orderRepository.findById(id)
+                .map(OrderMapper::toResponse)
+                .orElseThrow(() -> new ResourceNotFoundException("Orden %d no encontrada ".formatted(id)));
     }
 
     @Override
     public List<OrderResponse> findByCustomerId(Long customerId) {
         // Validar que el cliente existe
         if (!customerRepository.existsById(customerId)) {
-            throw new IllegalArgumentException("Customer with ID " + customerId + " not found");
+            throw new ResourceNotFoundException("Cliente con ID " + customerId + " no encontrado");
         }
         return orderRepository.findByCustomerId(customerId).stream()
                 .map(OrderMapper::toResponse)
@@ -117,7 +123,7 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public BigDecimal calculateOrderTotal(Long orderId) {
         Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new IllegalArgumentException("Order with ID " + orderId + " not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Pedido con ID " + orderId + " no encontrado"));
 
         return order.getItems().stream()
                 .map(OrderItem::getSubtotal)
@@ -129,11 +135,11 @@ public class OrderServiceImpl implements OrderService {
     public OrderResponse processPayment(Long orderId) {
         // Obtener el pedido
         Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new IllegalArgumentException("Order with ID " + orderId + " not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Pedido con ID " + orderId + " no encontrado"));
 
         // Validar que el pedido está en estado CREATED
         if (order.getStatus() != OrderStatus.CREATED) {
-            throw new IllegalArgumentException("Order must be in CREATED status to process payment");
+            throw new ConflictException("El pedido debe estar en estado CREATED para procesar el pago");
         }
 
         // Validar stock suficiente para todos los ítems ANTES de descontar
@@ -165,13 +171,13 @@ public class OrderServiceImpl implements OrderService {
     @Transactional
     public OrderResponse shipOrder(Long orderId) {
         Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new IllegalArgumentException("Order with ID " + orderId + " not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Pedido con ID " + orderId + " no encontrado"));
 
         if (order.getStatus() == OrderStatus.CANCELLED) {
-            throw new IllegalArgumentException("Cannot ship a cancelled order");
+            throw new ConflictException("No se puede enviar un pedido cancelado");
         }
         if (order.getStatus() != OrderStatus.PAID) {
-            throw new IllegalArgumentException("Only orders in PAID status can be shipped");
+            throw new ConflictException("Solo se pueden enviar pedidos en estado PAID");
         }
 
         order.setStatus(OrderStatus.SHIPPED);
@@ -184,10 +190,10 @@ public class OrderServiceImpl implements OrderService {
     @Transactional
     public OrderResponse deliverOrder(Long orderId) {
         Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new IllegalArgumentException("Order with ID " + orderId + " not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Pedido con ID " + orderId + " no encontrado"));
 
         if (order.getStatus() != OrderStatus.SHIPPED) {
-            throw new IllegalArgumentException("Only orders in SHIPPED status can be delivered");
+            throw new ConflictException("Solo se pueden entregar pedidos en estado SHIPPED");
         }
 
         order.setStatus(OrderStatus.DELIVERED);
@@ -200,16 +206,16 @@ public class OrderServiceImpl implements OrderService {
     @Transactional
     public OrderResponse cancelOrder(CancelOrderRequest request) {
         Order order = orderRepository.findById(request.orderId())
-                .orElseThrow(() -> new IllegalArgumentException("Order with ID " + request.orderId() + " not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Pedido con ID " + request.orderId() + " no encontrado"));
 
         if (order.getStatus() == OrderStatus.CANCELLED) {
             return OrderMapper.toResponse(order);
         }
         if (order.getStatus() == OrderStatus.SHIPPED) {
-            throw new IllegalArgumentException("Shipped orders cannot be cancelled");
+            throw new ConflictException("No se puede cancelar un pedido enviado");
         }
         if (order.getStatus() == OrderStatus.DELIVERED) {
-            throw new IllegalArgumentException("Delivered orders cannot be cancelled");
+            throw new ConflictException("No se puede cancelar un pedido entregado");
         }
 
         if (order.getStatus() == OrderStatus.PAID) {
@@ -231,7 +237,7 @@ public class OrderServiceImpl implements OrderService {
     public List<OrderStatusHistory> getOrderHistory(Long orderId) {
         // Validar que el pedido existe
         if (!orderRepository.existsById(orderId)) {
-            throw new IllegalArgumentException("Order with ID " + orderId + " not found");
+            throw new ResourceNotFoundException("Pedido con ID " + orderId + " no encontrado");
         }
         return orderStatusHistoryRepository.findByOrderIdOrderByChangedAtAsc(orderId);
     }

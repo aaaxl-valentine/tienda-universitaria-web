@@ -14,7 +14,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/constumers")
+@RequestMapping("/api/customers")
 @RequiredArgsConstructor
 @Validated
 public class CustomerController {
@@ -26,7 +26,7 @@ public class CustomerController {
             UriComponentsBuilder uriBuilder
     ){
         var customerCreated = costumerService.Create(request);
-        var location = uriBuilder.path("/api/constumers/{id}").buildAndExpand(customerCreated.id()).toUri();
+        var location = uriBuilder.path("/api/customers/{id}").buildAndExpand(customerCreated.id()).toUri();
         return ResponseEntity.created(location).body(customerCreated);
     }
 

@@ -1,6 +1,8 @@
 package co.unimagdalena.tiendauni.service;
 
 import co.unimagdalena.tiendauni.DTOs.InventoryDTOs.InventoryResponse;
+import co.unimagdalena.tiendauni.NotFoundException.ConflictException;
+import co.unimagdalena.tiendauni.NotFoundException.ResourceNotFoundException;
 import co.unimagdalena.tiendauni.entity.Inventory;
 import co.unimagdalena.tiendauni.entity.Product;
 import co.unimagdalena.tiendauni.repository.InventoryRepository;
@@ -44,11 +46,11 @@ public class InventoryServiceImpl implements InventoryService {
 
         // Verificar que el producto existe
         Product product = productRepository.findById(productId)
-                .orElseThrow(() -> new IllegalArgumentException("Product with ID " + productId + " not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Producto con ID " + productId + " no encontrado"));
 
         // Verificar que no exista ya inventario para este producto
         if (inventoryRepository.findByProductId(productId).isPresent()) {
-            throw new IllegalArgumentException("Inventory already exists for product ID: " + productId);
+            throw new ConflictException("Ya existe inventario para el producto con ID: " + productId);
         }
 
         Inventory inventory = Inventory.builder()
@@ -68,7 +70,7 @@ public class InventoryServiceImpl implements InventoryService {
         }
 
         Inventory inventory = inventoryRepository.findByProductId(productId)
-                .orElseThrow(() -> new IllegalArgumentException("Inventory not found for product ID: " + productId));
+                .orElseThrow(() -> new ResourceNotFoundException("Inventario no encontrado para el producto con ID: " + productId));
 
         inventory.setAvailableStock(newStock);
         return toResponse(inventoryRepository.save(inventory));
@@ -82,7 +84,7 @@ public class InventoryServiceImpl implements InventoryService {
         }
 
         Inventory inventory = inventoryRepository.findByProductId(productId)
-                .orElseThrow(() -> new IllegalArgumentException("Inventory not found for product ID: " + productId));
+                .orElseThrow(() -> new ResourceNotFoundException("Inventario no encontrado para el producto con ID: " + productId));
 
         inventory.setMinimumStock(newMinimumStock);
         return toResponse(inventoryRepository.save(inventory));
@@ -96,7 +98,7 @@ public class InventoryServiceImpl implements InventoryService {
         }
 
         Inventory inventory = inventoryRepository.findByProductId(productId)
-                .orElseThrow(() -> new IllegalArgumentException("Inventory not found for product ID: " + productId));
+                .orElseThrow(() -> new ResourceNotFoundException("Inventario no encontrado para el producto con ID: " + productId));
 
         inventory.setAvailableStock(inventory.getAvailableStock() + quantity);
         return toResponse(inventoryRepository.save(inventory));
@@ -110,7 +112,7 @@ public class InventoryServiceImpl implements InventoryService {
         }
 
         Inventory inventory = inventoryRepository.findByProductId(productId)
-                .orElseThrow(() -> new IllegalArgumentException("Inventory not found for product ID: " + productId));
+                .orElseThrow(() -> new ResourceNotFoundException("Inventario no encontrado para el producto con ID: " + productId));
 
         int newStock = inventory.getAvailableStock() - quantity;
         if (newStock < 0) {
