@@ -54,4 +54,9 @@ public interface ProductService {
      * Obtiene productos activos
      */
     List<ProductResponse> findActiveProducts();
+
+    /**
+     * Elimina un producto por ID
+     */
+    void deleteProduct(Long productId);
 }

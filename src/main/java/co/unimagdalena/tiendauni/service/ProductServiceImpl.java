@@ -153,4 +153,13 @@ public class ProductServiceImpl implements ProductService {
                 .map(ProductMapper::toResponse)
                 .toList();
     }
+
+    @Override
+    @Transactional
+    public void deleteProduct(Long productId) {
+        if (!productRepository.existsById(productId)) {
+            throw new ResourceNotFoundException("Product " + productId + " no existe");
+        }
+        productRepository.deleteById(productId);
+    }
 }

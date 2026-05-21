@@ -3,6 +3,7 @@ package co.unimagdalena.tiendauni.controller;
 import co.unimagdalena.tiendauni.DTOs.ProductDTOs.CreateProductRequest;
 import co.unimagdalena.tiendauni.DTOs.ProductDTOs.ProductResponse;
 import co.unimagdalena.tiendauni.DTOs.ProductDTOs.UpdateProductRequest;
+import co.unimagdalena.tiendauni.service.InventoryService;
 import co.unimagdalena.tiendauni.service.ProductService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +21,7 @@ import java.util.List;
 public class ProductController {
 
     private final ProductService productService;
+    private final InventoryService inventoryService;
 
     @PostMapping
     public ResponseEntity<ProductResponse> createProduct(@Valid @RequestBody CreateProductRequest req,
@@ -71,9 +73,32 @@ public class ProductController {
         return ResponseEntity.ok(productService.updateProduct(id, req));
     }
 
+    @PutMapping("/{id}")
+    public ResponseEntity<ProductResponse> replaceProduct(@PathVariable long id,
+                                                    @Valid @RequestBody UpdateProductRequest req) {
+        return ResponseEntity.ok(productService.updateProduct(id, req));
+    }
+
     @PatchMapping("/{id}/active")
     public ResponseEntity<ProductResponse> setProductActive(@PathVariable long id,
                                                      @RequestParam boolean active) {
         return ResponseEntity.ok(productService.setProductActive(id, active));
     }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteProduct(@PathVariable long id) {
+        productService.deleteProduct(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/{id}/inventory")
+    public ResponseEntity<ProductResponse> updateProductInventory(
+            @PathVariable long id,
+            @RequestParam Integer initialStock,
+            @RequestParam Integer minimumStock
+    ) {
+        inventoryService.createInventoryForProduct(id, initialStock, minimumStock);
+        return ResponseEntity.ok(productService.findById(id));
+    }
+
 }

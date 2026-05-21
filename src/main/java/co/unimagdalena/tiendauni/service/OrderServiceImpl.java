@@ -103,6 +103,14 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
+    public List<OrderResponse> findAll() {
+        return orderRepository.findAll()
+                .stream()
+                .map(OrderMapper::toResponse)
+                .toList();
+    }
+
+    @Override
     public OrderResponse findById(Long id) {
         return orderRepository.findById(id)
                 .map(OrderMapper::toResponse)
@@ -204,6 +212,12 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional
+    public OrderResponse cancelOrder(Long orderId) {
+        return cancelOrder(new CancelOrderRequest(orderId, "Order cancelled"));
+    }
+
+    @Override
+    @Transactional
     public OrderResponse cancelOrder(CancelOrderRequest request) {
         Order order = orderRepository.findById(request.orderId())
                 .orElseThrow(() -> new ResourceNotFoundException("Pedido con ID " + request.orderId() + " no encontrado"));
@@ -242,7 +256,14 @@ public class OrderServiceImpl implements OrderService {
         return orderStatusHistoryRepository.findByOrderIdOrderByChangedAtAsc(orderId);
     }
 
-
+    @Override
+    @Transactional
+    public void deleteOrder(Long orderId) {
+        if (!orderRepository.existsById(orderId)) {
+            throw new ResourceNotFoundException("Pedido con ID " + orderId + " no encontrado");
+        }
+        orderRepository.deleteById(orderId);
+    }
 
     private void recordStatusChange(Order order, OrderStatus newStatus, String notes) {
         OrderStatusHistory history = OrderStatusHistory.builder()

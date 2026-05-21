@@ -1,9 +1,9 @@
 package co.unimagdalena.tiendauni.NotFoundException;
 
-public class ConflictException extends RuntimeException {
+public class ValidationException extends RuntimeException {
     private static final long serialVersionUID = 1L;
 
-    public ConflictException(String message) {
+    public ValidationException(String message) {
         super(message);
     }
 }

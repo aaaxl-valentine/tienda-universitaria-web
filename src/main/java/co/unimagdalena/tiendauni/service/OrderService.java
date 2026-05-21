@@ -15,6 +15,11 @@ public interface OrderService {
     OrderResponse createOrder(CreateOrderRequest request);
 
     /**
+     * Obtiene todos los pedidos
+     */
+    List<OrderResponse> findAll();
+
+    /**
      * Busca un pedido por ID
      */
     OrderResponse findById(Long id);
@@ -46,6 +51,11 @@ public interface OrderService {
     OrderResponse deliverOrder(Long orderId);
 
     /**
+     * Cancela un pedido por ID con razón por defecto
+     */
+    OrderResponse cancelOrder(Long orderId);
+
+    /**
      * Cancela un pedido según reglas de estado y reversión de stock
      */
     OrderResponse cancelOrder(CancelOrderRequest request);
@@ -54,4 +64,9 @@ public interface OrderService {
      * Obtiene el historial de cambios de estado de un pedido
      */
     java.util.List<OrderStatusHistory> getOrderHistory(Long orderId);
+
+    /**
+     * Elimina un pedido por ID
+     */
+    void deleteOrder(Long orderId);
 }

@@ -25,5 +25,6 @@ public class Category {
 
     // Una categoría tiene muchos productos
     @OneToMany(mappedBy = "category", cascade = CascadeType.ALL)
+    @Builder.Default
     private List<Product> products = new ArrayList<>();
 }

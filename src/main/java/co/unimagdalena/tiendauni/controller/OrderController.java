@@ -31,6 +31,11 @@ public class OrderController {
         return ResponseEntity.created(location).body(orderCreated);
     }
 
+    @GetMapping
+    public ResponseEntity<List<OrderResponse>> getAllOrders() {
+        return ResponseEntity.ok(orderService.findAll());
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<OrderResponse> getOrder(@PathVariable long id) {
         return ResponseEntity.ok(orderService.findById(id));
@@ -51,14 +56,39 @@ public class OrderController {
         return ResponseEntity.ok(orderService.processPayment(id));
     }
 
+    @PutMapping("/{id}/pay")
+    public ResponseEntity<OrderResponse> payOrder(@PathVariable long id) {
+        return ResponseEntity.ok(orderService.processPayment(id));
+    }
+
     @PostMapping("/{id}/ship")
     public ResponseEntity<OrderResponse> shipOrder(@PathVariable long id) {
+        return ResponseEntity.ok(orderService.shipOrder(id));
+    }
+
+    @PutMapping("/{id}/ship")
+    public ResponseEntity<OrderResponse> shipOrderPut(@PathVariable long id) {
         return ResponseEntity.ok(orderService.shipOrder(id));
     }
 
     @PostMapping("/{id}/deliver")
     public ResponseEntity<OrderResponse> deliverOrder(@PathVariable long id) {
         return ResponseEntity.ok(orderService.deliverOrder(id));
+    }
+
+    @PutMapping("/{id}/deliver")
+    public ResponseEntity<OrderResponse> deliverOrderPut(@PathVariable long id) {
+        return ResponseEntity.ok(orderService.deliverOrder(id));
+    }
+
+    @PostMapping("/{id}/cancel")
+    public ResponseEntity<OrderResponse> cancelOrderById(@PathVariable long id) {
+        return ResponseEntity.ok(orderService.cancelOrder(id));
+    }
+
+    @PutMapping("/{id}/cancel")
+    public ResponseEntity<OrderResponse> cancelOrderByIdPut(@PathVariable long id) {
+        return ResponseEntity.ok(orderService.cancelOrder(id));
     }
 
     @PostMapping("/cancel")
@@ -69,5 +99,11 @@ public class OrderController {
     @GetMapping("/{id}/history")
     public ResponseEntity<List<OrderStatusHistory>> getOrderHistory(@PathVariable long id) {
         return ResponseEntity.ok(orderService.getOrderHistory(id));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteOrder(@PathVariable long id) {
+        orderService.deleteOrder(id);
+        return ResponseEntity.noContent().build();
     }
 }

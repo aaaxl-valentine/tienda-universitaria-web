@@ -1,11 +1,11 @@
 package co.unimagdalena.tiendauni.controlador;
 
-import co.unimagdalena.tiendauni.DTOs.CustomerDTOs.CreateCustomerRequest;
-import co.unimagdalena.tiendauni.DTOs.CustomerDTOs.CustomerResponse;
+import co.unimagdalena.tiendauni.DTOs.ProductDTOs.CreateProductRequest;
+import co.unimagdalena.tiendauni.DTOs.ProductDTOs.ProductResponse;
 import co.unimagdalena.tiendauni.NotFoundException.GlobalExceptionHandler;
-import co.unimagdalena.tiendauni.controller.CustomerController;
-import co.unimagdalena.tiendauni.entity.enums.CustomerStatus;
-import co.unimagdalena.tiendauni.service.CustomerService;
+import co.unimagdalena.tiendauni.controller.ProductController;
+import co.unimagdalena.tiendauni.service.InventoryService;
+import co.unimagdalena.tiendauni.service.ProductService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +16,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -24,10 +25,10 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest(CustomerController.class)
+@WebMvcTest(ProductController.class)
 @AutoConfigureMockMvc(addFilters = false)
 @Import(GlobalExceptionHandler.class)
-class CustomerControllerTest {
+class ProductControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -35,28 +36,29 @@ class CustomerControllerTest {
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @MockitoBean
-    private CustomerService customerService;
+    private ProductService productService;
+
+    @MockitoBean
+    private InventoryService inventoryService;
 
     @Test
-    void createCustomerReturnsCreated() throws Exception {
-        var request = new CreateCustomerRequest("Ana", "Ruiz", "ana@example.com", CustomerStatus.ACTIVE);
-        var response = new CustomerResponse(1L, "Ana", "Ruiz", "ana@example.com", CustomerStatus.ACTIVE, LocalDateTime.now());
+    void createProductReturnsCreated() throws Exception {
+        var request = new CreateProductRequest("SKU-1", "Cuaderno", "Cuaderno norma", new BigDecimal("10.0"), true, 1L);
+        var response = new ProductResponse(1L, "SKU-1", "Cuaderno", "Cuaderno norma", new BigDecimal("10.0"), true, LocalDateTime.now(), 1L);
+        when(productService.createProduct(any(CreateProductRequest.class))).thenReturn(response);
 
-        when(customerService.Create(any(CreateCustomerRequest.class))).thenReturn(response);
-
-        mockMvc.perform(post("/api/customers")
+        mockMvc.perform(post("/api/products")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.id").value(1L))
-                .andExpect(jsonPath("$.email").value("ana@example.com"));
+                .andExpect(jsonPath("$.id").value(1L));
     }
 
     @Test
-    void createCustomerWithInvalidEmailReturnsBadRequest() throws Exception {
-        var request = new CreateCustomerRequest("Ana", "Ruiz", "bad-email", CustomerStatus.ACTIVE);
+    void createProductWithInvalidNameReturnsBadRequest() throws Exception {
+        var request = new CreateProductRequest("SKU-2", "", "Cuaderno", new BigDecimal("10.0"), true, 1L);
 
-        mockMvc.perform(post("/api/customers")
+        mockMvc.perform(post("/api/products")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())

@@ -2,6 +2,7 @@ package co.unimagdalena.tiendauni.controller;
 
 import co.unimagdalena.tiendauni.DTOs.CategoryDTOs.*;
 import co.unimagdalena.tiendauni.service.CategoryService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -31,6 +32,24 @@ public class CategoryController {
     @GetMapping
     public ResponseEntity<List<CategoryResponse>> getCategories(){
         return ResponseEntity.ok(categoryService.getAll());
+    }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<CategoryResponse> getCategoryById(@PathVariable long id) {
+        return ResponseEntity.ok(categoryService.get(id));
+    }
+
+    @PatchMapping("/{id}")
+    public ResponseEntity<CategoryResponse> updateCategory(
+            @PathVariable long id,
+            @Valid @RequestBody CreateCategoryRequest request
+    ) {
+        return ResponseEntity.ok(categoryService.update(id, request));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteCategory(@PathVariable long id) {
+        categoryService.delete(id);
+        return ResponseEntity.noContent().build();
     }
 }
