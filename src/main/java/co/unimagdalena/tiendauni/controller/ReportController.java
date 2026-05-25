@@ -33,6 +33,11 @@ public class ReportController {
         return ResponseEntity.ok(reportService.getLowStockProducts());
     }
 
+    @GetMapping("/products-with-insufficient-stock")
+    public ResponseEntity<List<LowStockProductResponse>> getProductsWithInsufficientStock() {
+        return ResponseEntity.ok(reportService.getProductsWithInsufficientStock());
+    }
+
 
     @GetMapping("/orders")
     public ResponseEntity<List<OrderResponse>> getOrdersByFilters(
