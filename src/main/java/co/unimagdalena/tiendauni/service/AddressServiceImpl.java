@@ -44,6 +44,15 @@ public class AddressServiceImpl implements AddressService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public List<AddressResponse> getAddressesByCustomerId(Long customerId) {
+        return addressRepository.findByCustomerId(customerId)
+                .stream()
+                .map(AddressMapper::toResponse)
+                .toList();
+    }
+
+    @Override
     public void deleteAddress(Long id) {
         if (!addressRepository.existsById(id)) {
             throw new ResourceNotFoundException("Direccion %d no encontrada".formatted(id));

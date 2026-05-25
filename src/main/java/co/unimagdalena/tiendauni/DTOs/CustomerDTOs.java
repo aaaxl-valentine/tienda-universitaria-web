@@ -9,16 +9,22 @@ import java.time.LocalDateTime;
 
 public class CustomerDTOs {
     public record CreateCustomerRequest(
-
-            @NotBlank  String firstName,
+            @NotBlank(message = "El nombre no puede estar vacío")
+            String firstName,
+            @NotBlank(message = "El apellido no puede estar vacío")
             String lastName,
-            @Email @NotBlank String email,
+            @Email(message = "El email debe ser válido")
+            @NotBlank(message = "El email no puede estar vacío")
+            String email,
             CustomerStatus status
     ) implements Serializable {}
 
     public record UpdateCustomerRequest(
+            @NotBlank(message = "El nombre no puede estar vacío")
             String firstName,
+            @NotBlank(message = "El apellido no puede estar vacío")
             String lastName,
+            @Email(message = "El email debe ser válido")
             String email,
             CustomerStatus status
     ) implements Serializable {}

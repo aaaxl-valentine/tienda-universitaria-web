@@ -1,5 +1,6 @@
 package co.unimagdalena.tiendauni.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -32,6 +33,7 @@ public class OrderStatusHistory {
     private LocalDateTime changedAt;
 
     // Este registro pertenece a un pedido
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "order_id", nullable = false)
     private Order order;

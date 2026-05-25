@@ -43,4 +43,15 @@ public class CategoryServiceImpl implements CategoryService {
         }
         categoryRepository.deleteById(id);
     }
+
+    @Override
+    @Transactional
+    public CategoryResponse update(Long id, CreateCategoryRequest request) {
+        var category = categoryRepository.findById(id).orElseThrow(
+                () -> new ResourceNotFoundException("Categoria %d no encontrada".formatted(id))
+        );
+        category.setName(request.name());
+        category.setDescription(request.description());
+        return CategoryMapper.toResponse(categoryRepository.save(category));
+    }
 }

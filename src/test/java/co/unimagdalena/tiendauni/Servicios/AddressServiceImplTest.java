@@ -128,6 +128,7 @@ class AddressServiceImplTest {
 
     @Test
     void shouldDeleteAddress() {
+        when(addressRepository.existsById(77L)).thenReturn(true);
         service.deleteAddress(77L);
         verify(addressRepository).deleteById(77L);
     }

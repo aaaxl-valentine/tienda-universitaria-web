@@ -33,6 +33,11 @@ public class ReportController {
         return ResponseEntity.ok(reportService.getLowStockProducts());
     }
 
+    @GetMapping("/products-with-insufficient-stock")
+    public ResponseEntity<List<LowStockProductResponse>> getProductsWithInsufficientStock() {
+        return ResponseEntity.ok(reportService.getProductsWithInsufficientStock());
+    }
+
 
     @GetMapping("/orders")
     public ResponseEntity<List<OrderResponse>> getOrdersByFilters(
@@ -52,8 +57,22 @@ public class ReportController {
         return ResponseEntity.ok(reportService.getTopSellingProductsByPeriod(startDate, endDate));
     }
 
+    @GetMapping("/best-selling-products")
+    public ResponseEntity<List<BestSellingProductResponse>> getBestSellingProducts(
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate) {
+        return ResponseEntity.ok(reportService.getTopSellingProductsByPeriod(startDate, endDate));
+    }
+
     @GetMapping("/monthly-revenue")
     public ResponseEntity<List<MonthlyIncomeResponse>> getMonthlyRevenue(
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate) {
+        return ResponseEntity.ok(reportService.getMonthlyRevenue(startDate, endDate));
+    }
+
+    @GetMapping("/monthly-income")
+    public ResponseEntity<List<MonthlyIncomeResponse>> getMonthlyIncome(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate) {
         return ResponseEntity.ok(reportService.getMonthlyRevenue(startDate, endDate));

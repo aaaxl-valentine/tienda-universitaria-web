@@ -40,9 +40,11 @@ public class Customer {
 
     // Un cliente tiene muchas direcciones
     @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL)
+    @Builder.Default
     private List<Address> addresses = new ArrayList<>();
 
     // Un cliente tiene muchos pedidos
     @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL)
+    @Builder.Default
     private List<Order> orders = new ArrayList<>();
 }
