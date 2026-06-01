@@ -63,7 +63,7 @@ public interface OrderService {
     /**
      * Obtiene el historial de cambios de estado de un pedido
      */
-    java.util.List<OrderStatusHistory> getOrderHistory(Long orderId);
+    List<OrderStatusHistory> getOrderHistory(Long orderId);
 
     /**
      * Elimina un pedido por ID

@@ -16,10 +16,6 @@ public interface ReportService {
 
     List<LowStockProductResponse> getLowStockProducts();
 
-    default List<LowStockProductResponse> getProductsWithInsufficientStock() {
-        return getLowStockProducts();
-    }
-
 
     List<OrderResponse> getOrdersByFilters(Long customerId,
                                            OrderStatus status,
